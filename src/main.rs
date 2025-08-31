@@ -26,11 +26,10 @@ fn main() {
         .get_matches();
 
     let title = matches.get_one::<String>("title");
-    
+
     if let Some(t) = title {
-       println!("Timer: {t}"); 
-    }
-    else {
+        println!("Timer: {t}");
+    } else {
         println!("Timer started");
     }
 
@@ -44,13 +43,50 @@ fn main() {
 }
 
 fn parse_time(s: &str) -> Result<u64, String> {
-    let s = s.trim();
-
     if s.is_empty() {
         return Err("Time cannot be empty".to_string());
     }
 
-    s.parse::<u64>()
-        .map_err(|e| format!("Invalid time format: {}", e))
-}
+    let parts: Vec<&str> = s.trim().split(':').collect();
 
+    match parts.len() {
+        1 => s
+            .parse::<u64>()
+            .map_err(|e| format!("Invalid time format: {}", e)),
+        2 => {
+            let seconds = parts[1]
+                .parse::<u64>()
+                .map_err(|e| format!("Invalid time format: {}", e))?;
+
+            let minutes = parts[0]
+                .parse::<u64>()
+                .map_err(|e| format!("Invalid time format: {}", e))?;
+
+            if seconds >= 60 {
+                return Err("Seconds must be < 60".to_string());
+            } else {
+                Ok(minutes * 60 + seconds)
+            }
+        }
+        3 => {
+            let seconds = parts[2]
+                .parse::<u64>()
+                .map_err(|e| format!("Invalid time format: {}", e))?;
+
+            let minutes = parts[1]
+                .parse::<u64>()
+                .map_err(|e| format!("Invalid time format: {}", e))?;
+
+            let hours = parts[0]
+                .parse::<u64>()
+                .map_err(|e| format!("Invalid time format: {}", e))?;
+
+            if seconds >= 60 || minutes >= 60 {
+                return Err("Minutes and seconds must be < 60".to_string());
+            } else {
+                Ok(hours * 3600 + minutes * 60 + seconds)
+            }
+        }
+        _ => Err("Invalid time format".to_string()),
+    }
+}
