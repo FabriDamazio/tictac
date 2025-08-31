@@ -1,4 +1,7 @@
-use std::{io::{stdout, Write}, thread, time};
+use std::{
+    io::{Write, stdout},
+    thread, time,
+};
 
 use clap::{Arg, Command};
 
@@ -14,13 +17,28 @@ fn main() {
                 .help("Time to countdown in seconds")
                 .value_parser(parse_time),
         )
+        .arg(
+            Arg::new("title")
+                .required(false)
+                .index(2)
+                .help("The timer title"),
+        )
         .get_matches();
+
+    let title = matches.get_one::<String>("title");
+    
+    if let Some(t) = title {
+       println!("Timer: {t}"); 
+    }
+    else {
+        println!("Timer started");
+    }
 
     let time = matches.get_one::<u64>("time").expect("Time is required");
 
     for i in (1..=*time).rev() {
         print!("\r{} seconds remaining", i);
-        stdout().flush().unwrap(); 
+        stdout().flush().unwrap();
         thread::sleep(time::Duration::from_secs(1));
     }
 }
@@ -35,3 +53,4 @@ fn parse_time(s: &str) -> Result<u64, String> {
     s.parse::<u64>()
         .map_err(|e| format!("Invalid time format: {}", e))
 }
+
